@@ -1,98 +1,28 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Node.js with React
+# Build a Node.js project that uses React.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
 trigger:
-- main
+- master
 
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: |
-    echo "Instalando nodeJs"
-# instalando nodejs
 - task: NodeTool@0
+
   inputs:
-    versionSpec: '11.x'
-  displayName: 'instalando node js'
-# fin nodejs
+    versionSpec: '10.x'
+  displayName: 'Install Node.js'
 
 - script: |
-    echo "Clonando sitio web"
-    git clone git@github.com:AlejandroRudolphy/React.git web   
-    
-    echo "Creando carpeta en un nivel más atrás"
-    mkdir ./../web
-    echo "Moviendo sitio web"
-    mv web/* ./../web
-    echo "Creando carpetas estáticas"
-    mkdir ./../web/content
-    echo "Copiando contenido"
+    npm install
+    npm run build
+  displayName: 'npm install and build'
 
-    mkdir ./* ./../web/content
-    mkdir web
-    echo "Ubicando toda la web mezclada en carpeta web"
-    mv ./../web/* ./web
-
-  displayName: 'Clone github to wiki'
-
-- task: replacetokens@3
-  inputs:
-    rootDirectory: '$(Build.SourcesDirectory)'
-    targetFiles: '**/config.js'
-    encoding: 'auto'
-    writeBOM: true
-    actionOnMissing: 'warn'
-    keepToken: false
-    tokenPrefix: '#{'
-    tokenSuffix: '}#'
-    useLegacyPattern: false
-    enableTelemetry: false
-
-#instalando gatsby
-- script: |   
-    npm install -g gatsby-cli
-  displayName: 'instalando gatsby'
-#fin gatsby
-
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: 'npm install'
-    workingDirectory: '$(Build.SourcesDirectory)/web'
-  displayName: 'npm install'
-
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: 'npm install --save-dev @babel/plugin-proposal-export-default-from'
-    workingDirectory: '$(Build.SourcesDirectory)/web'
-  displayName: 'npm install babel'
-
-#gatsby build
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: 'gatsby build'
-    workingDirectory: '$(Build.SourcesDirectory)/web'
-  displayName: 'gatsby build'
-#fin gatsby build
-
-#copiando archivos a salida
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/web/public'
-    Contents: '**'
-    TargetFolder: $(Build.ArtifactStagingDirectory)
-    CleanTargetFolder: true
-#fin copiando archivos a salida
-
-#publicando artifacts
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: $(Build.ArtifactStagingDirectory)
+    PathtoPublish: '$(Build.SourcesDirectory)/build'
     ArtifactName: 'drop'
-    publishLocation: 'container'
-#fin publicando artifacts
+    publishLocation: 'Container'
